@@ -54,24 +54,21 @@ KUBECONFIG=<filename> kubectl config use-context default-system
 ```
 
 2. Container runtime socket (conn to sock and exec)
-- crictl (provides a CLI for CRI-compatible container runtimes. This allows the CRI runtime developers to debug their runtime without needing to set up Kubernetes components)
+- [crictl](https://github.com/kubernetes-sigs/critools) (provides a CLI for CRI-compatible container runtimes. This allows the CRI runtime developers to debug their runtime without needing to set up Kubernetes components)
 ```bash
 curl -sL https://github.com/kubernetes-sigs/critools/releases/download/v1.25.0/crictl-v1.25.0-linux-amd64.tar.gz | tar zxf -
 ```
 - usage: `crictl exec -i -t example_pod bash`, `crictl ps` (get images), `crictl logs <image_id>` (get logs) ... 
 
-crictl by default connects on Unix to:
+- crictl by default connects on Unix to:
+  - unix:///run/containerd/containerd.sock or
+  - unix:///run/crio/crio.sock or
+  - unix:///var/run/cri-dockerd.sock
+- or on Windows to:
+  - npipe:////./pipe/containerd-containerd or
+  - npipe:////./pipe/cri-dockerd
 
-- unix:///run/containerd/containerd.sock or
-- unix:///run/crio/crio.sock or
-- unix:///var/run/cri-dockerd.sock
-
-or on Windows to:
-
-- npipe:////./pipe/containerd-containerd or
-- npipe:////./pipe/cri-dockerd
-
-3. Using these configs, you can interact with Pod and other resources located on the Node to which you fled
+1. Using these configs, you can interact with Pod and other resources located on the Node to which you fled
 ```bash
 kubectl –kubeconfig /etc/kubernetes/kubelet.conf get po -A
 ```
@@ -110,17 +107,3 @@ spec:
       operator: "Exists"
       effect: "NoSchedule"
 ```
-6. Tools (in `$PROJECT_DIR/pentest-tools`)
-- kube-hunter – a powerful tool for pentesters from Aqua Security
-- kubescape – identifying cluster misconfigs, RBAC, image scan
-- kdigger – tool for reconnaissance of the environment
-- kubelectl – a custom client for communicating with kubelet
-- peirates – multi-tool for pentesting a cluster, including from inside the Pod
-- BOtB – pentest tool for escaping from a container
-- Krew plugins (in `$PROJECT_DIR/pentest-tools/krew`) – access-matrix, fuzzy, kubesec-scan, node-shell, sudo, who-can
-
-7. Privilege escalation (in `$PROJECT_DIR/lpe`)
-• linPEAS – (in `./PEASS-ng`) script for raising privileges in Unix environments
-• LinEnum
-• LinuxSmartEnumeration
-• Traitor – a tool for identifying potential vulnerabilities and misconfigurations, which may lead to privilege escalation
