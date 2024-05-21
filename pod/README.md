@@ -9,7 +9,7 @@
 2. File system 
 - Application source code
 - Configs with sensitive data
-- Mounted directories
+- Mounted directories (`mount |grep overlay`, `df`, )
 - Container socket
 - Root directory
 - Ability to create StaticPod
@@ -110,7 +110,7 @@ spec:
 kubectl get pods -A -o go-template='{{range .spec.containers}}{{.image}}{{"\n"}}{{end}}' | sort -u >>  images.list
 ```
 
-- Exec `apt-get update && apt-get install docker-scan-plugin` and scan `docker scan $IMAGE` (or `cat images.list` | xargs -P 12 -I %i docker scan %i` )
+- Exec `apt-get update && apt-get install docker-scan-plugin` and scan `docker scan $IMAGE` (or `cat images.list | xargs -P 12 -I %i docker scan %i` )
 
 9. Get all external ports of all services in kubernetes cluster 
 ```bash
