@@ -4,6 +4,7 @@
 
 - Threat Matrix for Kubernetes: https://microsoft.github.io/Threat-Matrix-for-Kubernetes/
 
+- [DevSecOps Kubernetes Playground ("A Hacker's Guide to Kubernetes")](https://github.com/adavarski/HomeLab-k8s-DevSecOps-playground/tree/main)
 ### Tools 
 * [kube-hunter](https://github.com/aquasecurity/kube-hunter) – a powerful tool for pentesters from Aqua Security
 * [kubescape](https://github.com/armosec/kubescape) – identifying cluster misconfigs, RBAC, image scan

