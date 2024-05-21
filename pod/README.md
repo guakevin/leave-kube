@@ -101,7 +101,6 @@ spec:
   - name: noderoot
     hostPath:         <-- BAD
       path: /
-		
 ```
 8. Check used vulnerable images
 - Get used docker-image of all pods in all namespaces:
